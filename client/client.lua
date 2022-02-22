@@ -2,23 +2,13 @@ local active = false
 local waypoint = nil
 local drivingStyle = 959
 
-local setGear = GetHashKey('SET_VEHICLE_CURRENT_GEAR') & 0xFFFFFFFF
-local function SetVehicleCurrentGear(veh, gear)
-	Citizen.InvokeNative(setGear, veh, gear)
-end
-local nextGear = GetHashKey('SET_VEHICLE_NEXT_GEAR') & 0xFFFFFFFF
-local function SetVehicleNextGear(veh, gear)
-	Citizen.InvokeNative(nextGear, veh, gear)
-end
-local function ForceVehicleGear (vehicle, gear)
-	SetVehicleCurrentGear(vehicle, gear)
-	SetVehicleNextGear(vehicle, gear)
-	return gear
-end
-
 RegisterNetEvent('autopilot:start')
 AddEventHandler('autopilot:start', function(args)
     -- Setup variables
+    if(active) then
+        TriggerEvent('autopilot:stop')
+    end
+    
     local ped = PlayerPedId()
     local vehicle = GetVehiclePedIsIn(ped, false)
     local bip =GetFirstBlipInfoId(8)
@@ -26,9 +16,7 @@ AddEventHandler('autopilot:start', function(args)
         ESX.ShowHelpNotification('Please mark waypoint')
         return
     end
-    if(active) then
-        TriggerEvent('autopilot:stop')
-    end
+    
     waypoint = GetBlipCoords(bip)
     local stopRange = 10
     local speed = args.speed_kph / 3.6 -- unit KPH to In game
@@ -49,12 +37,12 @@ end)
 RegisterNetEvent('autopilot:stop')
 AddEventHandler('autopilot:stop', function()
     -- Setup variables
-    local ped = PlayerPedId()
-    local vehicle = GetVehiclePedIsIn(ped,false)
     if(not active) then
-        TriggerEvent('esx:showNotification', '~y~You must active auto pilot for stop')
         return
     end
+
+    local ped = PlayerPedId()
+    local vehicle = GetVehiclePedIsIn(ped,false)
     ESX.ShowNotification('~g~Auto pilot stop')
     ClearPedTasks(ped)
     active = false
@@ -88,6 +76,8 @@ function StopVehicleAtStreetClosest()
         TaskVehiclePark(ped,vehicle, parkPos.x, parkPos.y, parkPos.z, GetEntityHeading(ped),0,5,true)
         while true do
             if(IsControlJustReleased(0, 20)) then
+                TriggerEvent('autopilot:stop')
+
                 break
             end
             coords = GetEntityCoords(ped)
