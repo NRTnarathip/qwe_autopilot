@@ -3,5 +3,5 @@
  
  - Feature:
  - Command 
- - 1. atpstart speedKPH **start auto pilot with mark waypoint argument set speed unit KPH
- - 2. atrstop **stop auto pilot
+ - atpstart speedKPH **start auto pilot with mark waypoint argument set speed unit KPH
+ - atrstop **stop auto pilot
